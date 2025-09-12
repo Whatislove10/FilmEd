@@ -181,20 +181,25 @@ export default function App() {
   return (
     <Router>
       <div style={styles.appContainer}>
-        <header style={styles.header}>
-          <div style={styles.logo}>
-            <i className="fas fa-film icon-blue"></i> FilmEd
-          </div>
-          <nav style={styles.nav}>
-            <Link to="/" style={styles.navLink}><i className="fas fa-home icon"></i> Home</Link>
-            <span style={styles.navLink}><i className="fas fa-trophy icon"></i> Challenges</span>
-          </nav>
-          <div style={styles.userProfile}>
-            <div style={styles.userAvatar}>U</div>
-            User
-            <i className="fas fa-cog icon" style={styles.settingsIcon}></i>
-          </div>
-        </header>
+       <header style={styles.header}>
+  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+    <img
+      src="/logo_sample_hakathon_2.png"
+      alt="Lotto Logo"
+      style={{ height: '40px', width: 'auto' }}
+    />
+    <span style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#e0e0e0' }}>Filmit</span>
+  </div>
+  <nav style={styles.nav}>
+    <Link to="/" style={styles.navLink}><i className="fas fa-home icon"></i> Home</Link>
+    <span style={styles.navLink}><i className="fas fa-trophy icon"></i> Challenges</span>
+  </nav>
+  <div style={styles.userProfile}>
+    <div style={styles.userAvatar}>U</div>
+    User
+    <i className="fas fa-cog icon" style={styles.settingsIcon}></i>
+  </div>
+</header>
         <main style={styles.mainContent}>
           <Routes>
             <Route path="/" element={<ChallengesList />} />

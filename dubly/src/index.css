@@ -1,49 +1,23 @@
-/* index.css */
-
 :root {
-  /* Новая палитра в стиле "Матрицы" */
-  --matrix-green: #00ff41;
-  --matrix-green-dark: #008000;
-  --background-dark: #050505; /* Почти черный фон */
-  --background-panel: #0a1a0d; /* Темно-зеленый для панелей */
+  --primary-color: #50a5f1;
+  --primary-dark: #0072c6;
+  --background: #0f1115;
+  --panel-bg: #1c1f26;
   --text-light: #e0e0e0;
   --text-secondary: #8a919f;
-  --border-color: #004400; /* Темно-зеленая рамка */
+  --border-color: #333840;
   --success-green: #28a745;
 }
 
 body {
   margin: 0;
-  font-family: 'Share Tech Mono', monospace, system-ui; /* Моноширинный шрифт по умолчанию */
-  background-color: var(--background-dark);
+  font-family: 'Share Tech Mono', monospace, system-ui;
+  background: linear-gradient(135deg, #0f1115, #1c1f26);
   color: var(--text-light);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-
-  /* === НОВЫЙ ФОН В СТИЛЕ "МАТРИЦЫ" === */
-  /* Слой с "цифровым дождем" */
-  background-image:
-    linear-gradient(0deg,
-      rgba(0, 255, 65, 0.15) 1px,
-      transparent 1px,
-      transparent 1em),
-    linear-gradient(90deg,
-      rgba(0, 255, 65, 0.03) 1px,
-      transparent 1px);
-  background-size: 1px 1.2em, 5px 1px;
-  animation: matrix-scroll 0.7s linear infinite;
-}
-
-/* Анимация для "цифрового дождя" */
-@keyframes matrix-scroll {
-  from {
-    background-position: 0 0;
-  }
-  to {
-    background-position: 0 -1.2em;
-  }
 }
 
 #root {
@@ -52,13 +26,13 @@ body {
 }
 
 a {
-  color: var(--matrix-green);
+  color: var(--primary-color);
   text-decoration: none;
   transition: color 0.25s;
 }
 
 a:hover {
-  color: #8affaa;
+  color: #81c8ff;
 }
 
 button {
@@ -68,22 +42,22 @@ button {
   font-size: 1em;
   font-weight: 500;
   font-family: inherit;
-  background-color: var(--background-panel);
+  background-color: var(--panel-bg);
   color: var(--text-light);
   cursor: pointer;
   transition: border-color 0.25s, background-color 0.25s;
 }
 
 button:hover {
-  border-color: var(--matrix-green);
-  background-color: #0c2a15;
+  border-color: var(--primary-color);
+  background-color: #2a2d38;
 }
 
 button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
   border-color: var(--border-color);
-  background-color: var(--background-panel);
+  background-color: var(--panel-bg);
 }
 
 .icon {
@@ -91,6 +65,22 @@ button:disabled {
   color: var(--text-secondary);
 }
 
-.icon-green {
-  color: var(--matrix-green);
+.icon-primary {
+  color: var(--primary-color);
+}
+
+/* Панели и карточки */
+.panel {
+  background-color: var(--panel-bg);
+  border-radius: 8px;
+  padding: 1rem;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.panel:hover {
+  transform: translateY(-3px);
+  border-color: var(--primary-color);
+  box-shadow: 0 4px 15px rgba(80, 165, 241, 0.3);
 }
