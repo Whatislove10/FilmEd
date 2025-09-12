@@ -1,68 +1,96 @@
+/* index.css */
+
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
-
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
+  /* Новая палитра в стиле "Матрицы" */
+  --matrix-green: #00ff41;
+  --matrix-green-dark: #008000;
+  --background-dark: #050505; /* Почти черный фон */
+  --background-panel: #0a1a0d; /* Темно-зеленый для панелей */
+  --text-light: #e0e0e0;
+  --text-secondary: #8a919f;
+  --border-color: #004400; /* Темно-зеленая рамка */
+  --success-green: #28a745;
 }
 
 body {
   margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
+  font-family: 'Share Tech Mono', monospace, system-ui; /* Моноширинный шрифт по умолчанию */
+  background-color: var(--background-dark);
+  color: var(--text-light);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  /* === НОВЫЙ ФОН В СТИЛЕ "МАТРИЦЫ" === */
+  /* Слой с "цифровым дождем" */
+  background-image:
+    linear-gradient(0deg,
+      rgba(0, 255, 65, 0.15) 1px,
+      transparent 1px,
+      transparent 1em),
+    linear-gradient(90deg,
+      rgba(0, 255, 65, 0.03) 1px,
+      transparent 1px);
+  background-size: 1px 1.2em, 5px 1px;
+  animation: matrix-scroll 0.7s linear infinite;
+}
+
+/* Анимация для "цифрового дождя" */
+@keyframes matrix-scroll {
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: 0 -1.2em;
+  }
+}
+
+#root {
+  width: 100%;
   min-height: 100vh;
 }
 
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
+a {
+  color: var(--matrix-green);
+  text-decoration: none;
+  transition: color 0.25s;
+}
+
+a:hover {
+  color: #8affaa;
 }
 
 button {
-  border-radius: 8px;
-  border: 1px solid transparent;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
   padding: 0.6em 1.2em;
   font-size: 1em;
   font-weight: 500;
   font-family: inherit;
-  background-color: #1a1a1a;
+  background-color: var(--background-panel);
+  color: var(--text-light);
   cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+  transition: border-color 0.25s, background-color 0.25s;
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
+button:hover {
+  border-color: var(--matrix-green);
+  background-color: #0c2a15;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  border-color: var(--border-color);
+  background-color: var(--background-panel);
+}
+
+.icon {
+  margin-right: 8px;
+  color: var(--text-secondary);
+}
+
+.icon-green {
+  color: var(--matrix-green);
 }
