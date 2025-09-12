@@ -31,8 +31,12 @@ export default function ChallengePage() {
   const { id } = useParams<{ id: string }>();
   const [challenge, setChallenge] = useState<Challenge | null>(null);
   const [videos, setVideos] = useState<Video[]>([]);
+  const [file, setFile] = useState<File | null>(null);
+  const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/dsk6odyv1/upload"; // замените <your-cloud-name>
+  const UPLOAD_PRESET = "FilmEdMVP"; // имя unsigned preset
+
+  // Уникальный ID для пользователя
   const [userId] = useState(() => {
-    // уникальный ID для пользователя, сохраняем в localStorage
     let uid = localStorage.getItem("uid");
     if (!uid) {
       uid = crypto.randomUUID();
@@ -87,10 +91,45 @@ export default function ChallengePage() {
         votes: newVote.votes + 1
       });
 
-      // Не нужно обновлять локальный state вручную, onSnapshot сделает это автоматически
+      // onSnapshot автоматически обновит локальный стейт
 
     } catch (error) {
       console.error("Ошибка голосования:", error);
+    }
+  };
+
+  const handleUpload = async () => {
+    if (!file || !id) return;
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("upload_preset", UPLOAD_PRESET);
+
+      const response = await fetch(CLOUDINARY_URL, {
+        method: "POST",
+        body: formData
+      });
+
+      const data = await response.json();
+      const url = data.secure_url;
+
+      if (!url) throw new Error("Ошибка получения URL видео");
+
+      // Сохраняем URL в Firestore
+      await addDoc(collection(db, "videos"), {
+        challengeId: id,
+        url,
+        userId,
+        votes: 0,
+        voters: []
+      });
+
+      alert("Видео загружено!");
+      setFile(null);
+
+    } catch (error) {
+      console.error("Ошибка загрузки видео:", error);
     }
   };
 
@@ -100,6 +139,16 @@ export default function ChallengePage() {
     <div style={{ padding: 20 }}>
       <h1>{challenge.title}</h1>
       <p>{challenge.description}</p>
+
+      <h3>Upload your video:</h3>
+      <input
+        type="file"
+        accept="video/*"
+        onChange={(e) => setFile(e.target.files?.[0] || null)}
+      />
+      <button onClick={handleUpload} disabled={!file}>
+        Upload
+      </button>
 
       <h3>Submitted videos:</h3>
       {videos.length === 0 ? (
