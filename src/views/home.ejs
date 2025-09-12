@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Video Project</title>
+		<!-- Tailwind CSS -->
+		<script src="https://cdn.tailwindcss.com"></script>
+		<!-- Lucide icons -->
+		<script src="https://unpkg.com/lucide/dist/lucide.js"></script>
+	</head>
+	<body class="bg-[#2a2e33] text-white">
+		<!-- Include header partial -->
+			<%- include('homePage/header') %>
+		<!-- Include main content partial -->
+		
+    <div class="bg-[grey] p-10 rounded-lg text-center">
+			<%- include('homePage/homePage') %>
+		</div>
+
+		<!-- Initialize icons -->
+		<script>
+			lucide.replace()
+		</script>
+	</body>
+</html>
