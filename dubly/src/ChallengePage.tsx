@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { db } from "./firebase";
-import { collection, doc, getDoc, query, where, getDocs } from "firebase/firestore";
+import { collection, doc, getDoc, query, where, getDocs, addDoc } from "firebase/firestore";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 interface Challenge {
   id: string;
@@ -22,6 +23,8 @@ export default function ChallengePage() {
   const [challenge, setChallenge] = useState<Challenge | null>(null);
   const [videos, setVideos] = useState<Video[]>([]);
   const [file, setFile] = useState<File | null>(null);
+  const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/dsk6odyv1/upload"; // замените <your-cloud-name>
+  const UPLOAD_PRESET = "FilmEdMVP"; // имя unsigned preset
 
   useEffect(() => {
     if (!id) return;
@@ -38,7 +41,9 @@ export default function ChallengePage() {
       const q = query(collection(db, "videos"), where("challengeId", "==", id));
       const snapshot = await getDocs(q);
       const vids: Video[] = [];
-      snapshot.forEach((doc) => vids.push({ ...(doc.data() as Video), id: doc.id}));
+      snapshot.forEach((doc) =>
+        vids.push({ ...(doc.data() as Video), id: doc.id })
+      );
       setVideos(vids);
     };
 
@@ -46,19 +51,67 @@ export default function ChallengePage() {
     fetchVideos();
   }, [id]);
 
+  const handleUpload = async () => {
+    if (!file || !id) return;
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("upload_preset", UPLOAD_PRESET);
+
+      const response = await fetch(CLOUDINARY_URL, {
+        method: "POST",
+        body: formData
+      });
+
+      const data = await response.json();
+      const url = data.secure_url;
+
+      if (!url) throw new Error("Ошибка получения URL видео");
+
+      // Сохраняем URL в Firestore
+      await addDoc(collection(db, "videos"), {
+        challengeId: id,
+        url,
+        userId: "testUser", // TODO: заменить на реального пользователя
+        votes: 0,
+      });
+
+      alert("Видео загружено!");
+      setFile(null);
+
+      // Обновим список
+      const q = query(collection(db, "videos"), where("challengeId", "==", id));
+      const snapshot = await getDocs(q);
+      const vids: Video[] = [];
+      snapshot.forEach((doc) =>
+        vids.push({ ...(doc.data() as Video), id: doc.id })
+      );
+      setVideos(vids);
+
+    } catch (error) {
+      console.error("Ошибка загрузки видео:", error);
+    }
+  };
+
   if (!challenge) return <div>Loading challenge...</div>;
 
-  return (
+return (
   <div style={{ padding: 20 }}>
     <h1>{challenge.title}</h1>
     <p>{challenge.description}</p>
 
-    <h3>Requirements:</h3>
-    <ul>
-      {challenge.requirements.map((r, idx) => (
-        <li key={idx}>{r}</li>
-      ))}
-    </ul>
+    <h2>🔥 DEBUG: This is ChallengePage rendering</h2>
+
+    <h3>Upload your video:</h3>
+    <input
+      type="file"
+      accept="video/*"
+      onChange={(e) => setFile(e.target.files?.[0] || null)}
+    />
+    <button onClick={handleUpload} disabled={!file}>
+      Upload
+    </button>
 
     <h3>Submitted videos:</h3>
     {videos.length === 0 ? (
