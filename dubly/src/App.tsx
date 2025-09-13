@@ -5,8 +5,9 @@ import ProfilePage from "./ProfilePage";
 import FeedPage from "./FeedPage";
 import TeamPage from "./TeamPage";
 import { Header } from "./components/Header";
-import HomePage from "./HomePage"; // Импортируем новую главную
-import ChallengesListPage from "./ChallengesListPage"; // Импортируем страницу челленджей
+import HomePage from "./HomePage";
+import ChallengesListPage from "./ChallengesListPage";
+import AboutPage from "./AboutPage"; // Убедитесь, что импорт есть
 
 export default function App() {
   return (
@@ -16,12 +17,13 @@ export default function App() {
         <main className="container mx-auto px-4 py-8">
           <Routes>
             <Route path="/" element={<HomePage />} />
-            <Route path="/challenges" element={<ChallengesListPage />} /> {/* Новый роут */}
+            <Route path="/challenges" element={<ChallengesListPage />} />
             <Route path="/challenge/:id" element={<ChallengePage />} />
             <Route path="/learn" element={<LearnPage />} />
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/feed" element={<FeedPage />} />
             <Route path="/team" element={<TeamPage />} />
+            <Route path="/about" element={<AboutPage />} /> {/* <-- ВОТ ИСПРАВЛЕНИЕ */}
           </Routes>
         </main>
       </div>

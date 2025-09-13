@@ -8,7 +8,14 @@ import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Clock, Users, Video } from 'lucide-react';
 
-// Типы, которые мы вынесли из App.tsx
+// --- KEY CHANGE 1: Import local images ---
+// Make sure the path and filenames match what you have in `src/assets`
+import titanicImage from '@/assets/Titanic.jpg';
+import matrixImage from '@/assets/Matrix.jpg';
+import scarfaceImage from '@/assets/Scarface.jpg';
+
+
+// Interface for the challenge data
 interface Challenge {
   id: string;
   title: string;
@@ -18,14 +25,14 @@ interface Challenge {
   winner?: string;
   participants?: number;
   daysLeft?: number;
-  image: string; // Добавили поле для изображения
+  image: string; // The type remains a string, as the import provides a path
 }
 
-// Рандомные изображения для челленджей
+// --- KEY CHANGE 2: Use the imported images in the array ---
 const challengeImages = [
-    "https://images.pexels.com/photos/274996/pexels-photo-274996.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
-    "https://images.pexels.com/photos/7234283/pexels-photo-7234283.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
-    "https://images.pexels.com/photos/2026324/pexels-photo-2026324.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
+    titanicImage,
+    matrixImage,
+    scarfaceImage,
 ];
 
 export default function ChallengesListPage() {
@@ -40,7 +47,8 @@ export default function ChallengesListPage() {
                 arr.push({ 
                     ...(doc.data() as Omit<Challenge, 'id' | 'image'>), 
                     id: doc.id,
-                    image: challengeImages[imageIndex % challengeImages.length] // Циклически присваиваем картинки
+                    // Assign the local image path cyclically
+                    image: challengeImages[imageIndex % challengeImages.length] 
                 });
                 imageIndex++;
             });
@@ -77,7 +85,7 @@ export default function ChallengesListPage() {
                                 </div>
                                 <div>
                                     <span className="text-xs font-semibold">PROGRESS</span>
-                                    <Progress value={(c.participants || 0) / 10 * 100} className="mt-1 h-2" />
+                                    <Progress value={((c.participants || 0) / 10) * 100} className="mt-1 h-2" />
                                 </div>
                             </CardContent>
                             <CardFooter>
