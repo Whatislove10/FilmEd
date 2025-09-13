@@ -1,6 +1,6 @@
 // App.tsx
 
-import { useEffect, useState } from "react"; // 'React' удален
+import { useEffect, useState } from "react";
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import ChallengePage from "./ChallengePage";
 import { db } from "./firebase";
@@ -10,6 +10,7 @@ import ProfilePage from "./ProfilePage";
 import FeedPage from "./FeedPage";
 import AboutPage from "./AboutPage";
 import TeamPage from "./TeamPage";
+import { Header } from "./components/Header";
 
 interface Challenge {
   id: string;
@@ -19,127 +20,6 @@ interface Challenge {
   status: "upcoming" | "active" | "ended";
   winner?: string;
 }
-
-// Стили для App компонента
-const styles = {
-  appContainer: {
-    display: 'flex',
-    flexDirection: 'column',
-    minHeight: '100vh',
-  },
-  header: {
-    backgroundColor: '#282c34',
-    padding: '10px 40px',
-    borderBottom: '1px solid #4a4f58',
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    flexShrink: 0,
-    position: 'sticky',
-    top: 0,
-    zIndex: 1000,
-  },
-  logo: {
-    fontSize: '1.5rem',
-    fontWeight: 'bold',
-    color: '#e0e0e0',
-  },
-  nav: {
-    display: 'flex',
-    gap: '25px',
-  },
-  navLink: {
-    color: '#8a919f',
-    fontWeight: 500,
-    fontSize: '1rem',
-    display: 'flex',
-    alignItems: 'center',
-  },
-  userProfile: {
-    color: '#e0e0e0',
-    fontWeight: 'bold',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '10px',
-  },
-  userAvatar: {
-    width: '30px',
-    height: '30px',
-    borderRadius: '50%',
-    backgroundColor: '#50a5f1',
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    color: '#1e2128',
-    fontSize: '0.9rem',
-  },
-  settingsIcon: {
-    marginLeft: '10px',
-    color: '#8a919f',
-    cursor: 'pointer',
-    transition: 'color 0.2s ease',
-  },
-  mainContent: {
-    padding: '40px',
-    maxWidth: '1280px',
-    width: '100%',
-    margin: '0 auto',
-    boxSizing: 'border-box',
-    flexGrow: 1,
-  },
-  pageTitle: {
-    fontSize: '2.5rem',
-    borderBottom: '1px solid #4a4f58',
-    paddingBottom: '15px',
-    marginBottom: '30px',
-  },
-  challengeGrid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))',
-    gap: '25px',
-  },
-  challengeCard: {
-    backgroundColor: '#282c34',
-    border: '1px solid #4a4f58',
-    borderRadius: '8px',
-    padding: '20px',
-    display: 'flex',
-    flexDirection: 'column',
-    transition: 'transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease',
-  },
-  challengeCardHover: {
-    transform: 'translateY(-5px)',
-    borderColor: '#50a5f1',
-    boxShadow: '0 5px 15px rgba(80, 165, 241, 0.2)',
-  },
-  challengeTitle: {
-    fontSize: '1.5rem',
-    fontWeight: 600,
-    color: '#e0e0e0',
-    marginBottom: '10px',
-  },
-  challengeDescription: {
-    color: '#8a919f',
-    flexGrow: 1,
-    marginBottom: '20px',
-  },
-  challengeLink: {
-    display: 'inline-block',
-    textAlign: 'center',
-    backgroundColor: 'transparent',
-    border: '1px solid #50a5f1',
-    color: '#50a5f1',
-    padding: '10px 15px',
-    borderRadius: '6px',
-    fontWeight: 500,
-    alignSelf: 'flex-start',
-    transition: 'background-color 0.2s ease, color 0.2s ease',
-  },
-  challengeLinkHover: {
-    backgroundColor: '#50a5f1',
-    color: '#1e2128',
-  },
-} as const; // <-- ИСПРАВЛЕНИЕ: Добавляем 'as const'
 
 export default function App() {
   const [challenges, setChallenges] = useState<Challenge[]>([]);
@@ -154,29 +34,27 @@ export default function App() {
     fetchChallenges();
   }, []);
 
+  // Этот компонент тоже стоит вынести в отдельный файл и стилизовать через Tailwind
   const ChallengesList = () => (
     <>
-      <h2 style={styles.pageTitle}>Challenges</h2>
+      <h2 className="text-3xl font-bold tracking-tight mb-8 pb-4 border-b">Challenges</h2>
       {challenges.length === 0 ? (
-        <p style={{textAlign: 'center', color: styles.challengeDescription.color}}>No challenges yet</p>
+        <p className="text-center text-muted-foreground">No challenges yet</p>
       ) : (
-        <div style={styles.challengeGrid}>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {challenges.map(c => (
+            // Для карточек можно будет использовать компонент Card от shadcn
             <div
               key={c.id}
-              style={styles.challengeCard}
-              onMouseEnter={e => Object.assign(e.currentTarget.style, styles.challengeCardHover)}
-              onMouseLeave={e => Object.assign(e.currentTarget.style, styles.challengeCard)}
+              className="border bg-card text-card-foreground rounded-lg p-6 flex flex-col transition-all hover:shadow-lg hover:-translate-y-1"
             >
-              <h3 style={styles.challengeTitle}>{c.title}</h3>
-              <p style={styles.challengeDescription}>{c.description}</p>
+              <h3 className="text-xl font-semibold mb-2">{c.title}</h3>
+              <p className="text-muted-foreground flex-grow mb-4">{c.description}</p>
               <Link
                 to={`/challenge/${c.id}`}
-                style={styles.challengeLink}
-                onMouseEnter={e => Object.assign(e.currentTarget.style, styles.challengeLinkHover)}
-                onMouseLeave={e => Object.assign(e.currentTarget.style, styles.challengeLink)}
+                className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2 self-start"
               >
-                <i className="fas fa-arrow-right icon"></i> Go to challenge
+                Go to challenge
               </Link>
             </div>
           ))}
@@ -187,32 +65,10 @@ export default function App() {
 
   return (
     <Router>
-      <div style={styles.appContainer}>
-       <header style={styles.header}>
-  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-    <img
-      src="/logo_sample_hakathon_2.png"
-      alt="Lotto Logo"
-      style={{ height: '40px', width: 'auto' }}
-    />
-    <span style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#e0e0e0' }}>Filmit</span>
-  </div>
-  <nav style={styles.nav}>
-    <Link to="/" style={styles.navLink}><i className="fas fa-home icon"></i> Home</Link>
-    <Link to="/challenge/:id" style={styles.navLink}><i className="fas fa-trophy icon"></i> Challenges</Link>
-    <Link to="/learn">📚 Learn</Link>
-        <Link to="/profile">👤 Profile</Link>
-        <Link to="/feed">🎥 Feed</Link>
-        <Link to="/about">ℹ️ About</Link>
-        <Link to="/team">Meet Our Team</Link>
-  </nav>
-  <div style={styles.userProfile}>
-    <div style={styles.userAvatar}>U</div>
-    User
-    <i className="fas fa-cog icon" style={styles.settingsIcon}></i>
-  </div>
-</header>
-        <main style={styles.mainContent}>
+      {/* Используем Tailwind для основного контейнера */}
+      <div className="min-h-screen font-sans antialiased">
+        <Header /> {/* <-- Вот наш новый навбар! */}
+        <main className="container mx-auto px-4 py-8">
           <Routes>
             <Route path="/" element={<ChallengesList />} />
             <Route path="/challenge/:id" element={<ChallengePage />} />

@@ -1,15 +1,12 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
+import path from "path"
+import react from "@vitejs/plugin-react"
+import { defineConfig } from "vite"
 
-// https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
-  server: {
-    host: true, // разрешает подключение снаружи
-    port: 5173,
-    strictPort: true,
-    allowedHosts: [
-      '4d32e2e3e3f6.ngrok-free.app', // твой ngrok URL
-    ],
+  resolve: {
+    alias: {
+      "@": path.resolve(__dirname, "./src"),
+    },
   },
 })

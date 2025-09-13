@@ -1,86 +1,102 @@
-:root {
-  --primary-color: #50a5f1;
-  --primary-dark: #0072c6;
-  --background: #0f1115;
-  --panel-bg: #1c1f26;
-  --text-light: #e0e0e0;
-  --text-secondary: #8a919f;
-  --border-color: #333840;
-  --success-green: #28a745;
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Анимация для градиентного фона */
+@keyframes gradient-animation {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }
 
-body {
-  margin: 0;
-  font-family: 'Share Tech Mono', monospace, system-ui;
-  background: linear-gradient(135deg, #0f1115, #1c1f26);
-  color: var(--text-light);
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+/* Анимация для плавного появления элементов */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-#root {
-  width: 100%;
-  min-height: 100vh;
+/* Утилитарный класс для применения анимации */
+.fade-in {
+  animation: fadeIn 0.5s ease-out forwards;
 }
 
-a {
-  color: var(--primary-color);
-  text-decoration: none;
-  transition: color 0.25s;
+
+@layer base {
+  /* Устанавливаем нашу новую синюю темную тему по умолчанию */
+  :root {
+    --background: 224 71% 4%; /* Глубокий космический синий */
+    --foreground: 210 40% 98%; /* Светло-серый текст */
+
+    --card: 224 71% 8%; /* Карточки чуть светлее фона */
+    --card-foreground: 210 40% 98%;
+
+    --popover: 224 71% 4%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 200 98% 52%; /* Яркий электрик-синий */
+    --primary-foreground: 222.2 47.4% 11.2%;
+
+    --secondary: 217 33% 17%; /* Приглушенный синий */
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217 33% 17%;
+    --muted-foreground: 215 20% 65%;
+
+    --accent: 170 80% 45%; /* Бирюзовый/циан акцент */
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 63% 31%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217 33% 25%; /* Синеватый бордер */
+    --input: 217 33% 25%;
+    --ring: 200 98% 52%; /* Цвет для фокуса/обводки */
+
+    --radius: 0.75rem; /* Сделаем углы чуть более скругленными */
+  }
+
+  .dark {
+    /* Оставляем этот блок для возможного переключателя тем, 
+       но сейчас он дублирует :root, так как темная тема - основная. */
+    --background: 224 71% 4%;
+    --foreground: 210 40% 98%;
+    --card: 224 71% 8%;
+    --card-foreground: 210 40% 98%;
+    --popover: 224 71% 4%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 200 98% 52%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 217 33% 17%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217 33% 17%;
+    --muted-foreground: 215 20% 65%;
+    --accent: 170 80% 45%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 63% 31%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217 33% 25%;
+    --input: 217 33% 25%;
+    --ring: 200 98% 52%;
+    --radius: 0.75rem;
+  }
 }
 
-a:hover {
-  color: #81c8ff;
-}
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply text-foreground;
 
-button {
-  border-radius: 6px;
-  border: 1px solid var(--border-color);
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: var(--panel-bg);
-  color: var(--text-light);
-  cursor: pointer;
-  transition: border-color 0.25s, background-color 0.25s;
-}
-
-button:hover {
-  border-color: var(--primary-color);
-  background-color: #2a2d38;
-}
-
-button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  border-color: var(--border-color);
-  background-color: var(--panel-bg);
-}
-
-.icon {
-  margin-right: 8px;
-  color: var(--text-secondary);
-}
-
-.icon-primary {
-  color: var(--primary-color);
-}
-
-/* Панели и карточки */
-.panel {
-  background-color: var(--panel-bg);
-  border-radius: 8px;
-  padding: 1rem;
-  border: 1px solid var(--border-color);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.4);
-  transition: transform 0.2s ease, border-color 0.2s ease;
-}
-
-.panel:hover {
-  transform: translateY(-3px);
-  border-color: var(--primary-color);
-  box-shadow: 0 4px 15px rgba(80, 165, 241, 0.3);
+    /* Новый, более сложный градиентный фон */
+    background: linear-gradient(-45deg, hsl(var(--background)), #0e1a3a, #1a0a3a);
+    background-size: 400% 400%;
+    animation: gradient-animation 20s ease infinite;
+  }
 }

@@ -1,5 +1,6 @@
-// src/pages/AboutPage.tsx
-import React from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+
 import Alex from "/src/assets/Alexnew.jpg";
 import Artjom from "/src/assets/artjom.jpg";
 import Vlad from "/src/assets/vlad.jpg";
@@ -10,72 +11,39 @@ interface TeamMember {
   role: string;
   description: string;
   image: string;
+  fallback: string;
 }
 
 const team: TeamMember[] = [
-  {
-    name: "Aleksei Kurõljov",
-    role: "Designer, Pitcher",
-    description:
-      "// frontend, design, public speaking и чтонибудь еще. Пару предложений",
-    image: Alex,
-  },
-  {
-    name: "Vladislav Nesterenko",
-    role: "Backend Beast",
-    description:
-      "// backend, Java, marketing и чтонибудь еще. Пару предложений",
-    image: Vlad,
-  },
-  {
-    name: "Artjom Kulikovski",
-    role: "Mobile applications Expert",
-    description:
-      "// frontend, JavaScript, entrepreneurship и чтонибудь еще. Пару предложений",
-    image: Artjom,
-  },
-  {
-    name: "Alina",
-    role: "Alina Designer и чтонибудь еще",
-    description:
-      "// Alina Designer и чтонибудь еще",
-    image: "https://via.placeholder.com/150",
-  },
-  {
-    name: "Nikita Strekalov",
-    role: "Cybersecurity Paladin",
-    description:
-      "// backend, Golang, data analysis и чтонибудь еще. Пару предложений",
-    image: Nikita,
-  },
+    { name: "Aleksei Kurõljov", role: "Designer, Pitcher", description: "Frontend developer, design enthusiast, and public speaker.", image: Alex, fallback: "AK" },
+    { name: "Vladislav Nesterenko", role: "Backend Beast", description: "Backend specialist with a passion for Java and marketing.", image: Vlad, fallback: "VN" },
+    { name: "Artjom Kulikovski", role: "Mobile Applications Expert", description: "Frontend developer focused on JavaScript and entrepreneurship.", image: Artjom, fallback: "AK" },
+    { name: "Alina", role: "Creative Designer", description: "The creative mind behind our visual identity.", image: "https://via.placeholder.com/150", fallback: "A" },
+    { name: "Nikita Strekalov", role: "Cybersecurity Paladin", description: "Backend developer with expertise in Golang and data analysis.", image: Nikita, fallback: "NS" },
 ];
 
-const TeamPage: React.FC = () => {
+export default function TeamPage() {
   return (
-    <div className="p-8">
-      <h1 className="text-3xl font-bold text-center mb-8">Наша команда</h1>
-      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
+    <div className="space-y-8 fade-in">
+      <div className="text-center">
+        <h1 className="text-4xl font-bold tracking-tight">Meet Our Team</h1>
+        <p className="text-muted-foreground mt-2 text-lg">The minds behind the magic.</p>
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-8">
         {team.map((member) => (
-          <div
-            key={member.name}
-            className="bg-white shadow-lg rounded-2xl p-4 flex flex-col items-center"
-          >
-            <img
-              src={member.image}
-              alt={member.name}
-              className="w-24 h-24 rounded-full object-cover mb-4"
-              height='300px" width="300px'
-            />
-            <h2 className="text-xl font-semibold">{member.name}</h2>
-            <p className="text-sm text-gray-500">{member.role}</p>
-            <p className="text-center text-gray-700 mt-2">
-              {member.description}
-            </p>
-          </div>
+          <Card key={member.name} className="text-center transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-2xl hover:shadow-primary/20 border-0 group">
+            <CardContent className="pt-6 flex flex-col items-center">
+              <Avatar className="w-32 h-32 mb-4 border-4 border-transparent group-hover:border-primary transition-all duration-300">
+                <AvatarImage src={member.image} alt={member.name} />
+                <AvatarFallback>{member.fallback}</AvatarFallback>
+              </Avatar>
+              <h3 className="text-xl font-semibold">{member.name}</h3>
+              <p className="text-primary font-medium">{member.role}</p>
+              <p className="text-sm text-muted-foreground mt-2">{member.description}</p>
+            </CardContent>
+          </Card>
         ))}
       </div>
     </div>
   );
 };
-
-export default TeamPage;

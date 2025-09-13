@@ -11,8 +11,9 @@ import {
   updateDoc,
   onSnapshot,
 } from "firebase/firestore";
-import MatrixBackground from "./MatrixBackground";
+import useMatrixBackground from "./MatrixBackground";
 
+// --- Interfaces ---
 interface Challenge {
   id: string;
   title: string;
@@ -30,6 +31,7 @@ interface Video {
   voters?: string[];
 }
 
+// --- Styles (using inline for this specific page theme) ---
 const styles: any = {
   page: {
     minHeight: "100vh",
@@ -128,6 +130,7 @@ const styles: any = {
   },
 };
 
+// --- Component ---
 export default function ChallengePage() {
   const { id } = useParams<{ id: string }>();
   const [challenge, setChallenge] = useState<Challenge | null>(null);
@@ -147,19 +150,28 @@ export default function ChallengePage() {
     return uid;
   });
 
+  // *** KEY CHANGE IS HERE ***
+  // We determine if the matrix should be active based on the challenge title.
+  // The '?? false' handles the initial state when 'challenge' is still null.
+  const isMatrixChallenge = challenge?.title.toLowerCase().includes("matrix") ?? false;
+  
+  // The hook now activates conditionally.
+  useMatrixBackground(isMatrixChallenge);
+
   useEffect(() => {
     if (!id) return;
     const docRef = doc(db, "challenges", id);
-    getDoc(docRef).then((docSnap) => {
-      if (docSnap.exists())
-        setChallenge({
-          ...(docSnap.data() as Challenge),
-          id: docSnap.id,
-        });
+    const unsubscribeChallenge = onSnapshot(docRef, (docSnap) => {
+        if (docSnap.exists()) {
+            setChallenge({
+                ...(docSnap.data() as Challenge),
+                id: docSnap.id,
+            });
+        }
     });
 
     const q = query(collection(db, "videos"), where("challengeId", "==", id));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
+    const unsubscribeVideos = onSnapshot(q, (snapshot) => {
       const vids: Video[] = [];
       snapshot.forEach((doc) =>
         vids.push({
@@ -170,7 +182,11 @@ export default function ChallengePage() {
       );
       setVideos(vids);
     });
-    return () => unsubscribe();
+    
+    return () => {
+        unsubscribeChallenge();
+        unsubscribeVideos();
+    };
   }, [id]);
 
   const handleVote = async (videoId: string) => {
@@ -247,170 +263,78 @@ export default function ChallengePage() {
   const embedUrl = getYouTubeEmbedUrl(challenge.originalVideoUrl);
 
   return (
-    <>
-      <MatrixBackground />
-      <div style={styles.page}>
-        <header style={styles.header}>
-          <h1 style={styles.title}>{challenge.title}</h1>
-          <p style={styles.description}>{challenge.description}</p>
-        </header>
+    <div style={styles.page}>
+      <header style={styles.header}>
+        <h1 style={styles.title}>{challenge.title}</h1>
+        <p style={styles.description}>{challenge.description}</p>
+      </header>
 
-        {embedUrl && (
-          <div
-            style={{
-              position: "relative",
-              width: "100%",
-              maxWidth: "800px",
-              paddingTop: "56.25%",
-              borderRadius: "8px",
-              overflow: "hidden",
-              boxShadow: "0 0 15px rgba(0,255,65,0.3)",
-            }}
-          >
-            <iframe
-              src={embedUrl}
-              title="Challenge Original Video"
-              frameBorder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
-              allowFullScreen
-              playsInline
-              style={{
-                position: "absolute",
-                top: 0,
-                left: 0,
-                width: "100%",
-                height: "100%",
-                border: "none",
-              }}
-            ></iframe>
-          </div>
-        )}
+      {embedUrl && (
+        <div style={{ position: "relative", width: "100%", maxWidth: "800px", paddingTop: "56.25%", borderRadius: "8px", overflow: "hidden", boxShadow: "0 0 15px rgba(0,255,65,0.3)" }}>
+          <iframe src={embedUrl} title="Challenge Original Video" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen" allowFullScreen playsInline style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", border: "none" }}></iframe>
+        </div>
+      )}
 
-        {/* --- Upcoming --- */}
-        {challenge.status === "upcoming" && (
-          <div style={{ textAlign: "center" }}>
-            <p>Этот челлендж ещё не начался.</p>
-            <button style={styles.uploadButton}>
-              🔔 Напомнить
-            </button>
-          </div>
-        )}
+      {challenge.status === "upcoming" && (
+        <div style={{ textAlign: "center" }}>
+          <p>This challenge has not started yet.</p>
+          <button style={styles.uploadButton}>🔔 Notify Me</button>
+        </div>
+      )}
 
-        {/* --- Active --- */}
-        {challenge.status === "active" && (
-          <section style={styles.uploadSection}>
-            <label style={styles.fileInput}>
-              {file ? `Selected: ${file.name}` : "Select video"}
-              <input
-                type="file"
-                accept="video/*"
-                style={{ display: "none" }}
-                onChange={(e) =>
-                  setFile(e.target.files?.[0] || null)
-                }
-              />
-            </label>
-            <button
-              style={styles.uploadButton}
-              onClick={handleUpload}
-              disabled={!file || isUploading}
-            >
-              {isUploading ? "Uploading..." : "Upload"}
-            </button>
-          </section>
-        )}
+      {challenge.status === "active" && (
+        <section style={styles.uploadSection}>
+          <label style={styles.fileInput}>
+            {file ? `Selected: ${file.name}` : "Select video"}
+            <input type="file" accept="video/*" style={{ display: "none" }} onChange={(e) => setFile(e.target.files?.[0] || null)} />
+          </label>
+          <button style={styles.uploadButton} onClick={handleUpload} disabled={!file || isUploading}>
+            {isUploading ? "Uploading..." : "Upload"}
+          </button>
+        </section>
+      )}
 
-        {/* --- Ended --- */}
-{challenge.status === "ended" && (
-  <div style={{ textAlign: "center" }}>
-    <p>Челлендж завершён ✅</p>
-    {videos.length > 0 && (
-      (() => {
-        const winner = videos.reduce((a, b) =>
-          b.votes > a.votes ? b : a
-        );
-        return (
-          <div>
-            <p style={{ color: "#0f0", fontWeight: "bold" }}>
-              🏆 Победитель: видео {winner.id} ({winner.votes} голосов)
-            </p>
-            <video
-              src={winner.url}
-              controls
-              playsInline
-              style={{
-                width: "100%",
-                maxWidth: "600px",
-                marginTop: "1rem",
-                border: "2px solid #0f0",
-                borderRadius: "8px",
-              }}
-            ></video>
-          </div>
-        );
-      })()
-    )}
-  </div>
-)}
-
-        <section style={{ width: "100%", maxWidth: "1200px" }}>
-          <h2
-            style={{
-              textAlign: "center",
-              fontSize: "2rem",
-              marginBottom: "1rem",
-              color: "#0f0",
-              textShadow: "0 0 5px rgba(0,255,65,0.4)",
-            }}
-          >
-            Community Recreations
-          </h2>
-          <div
-            style={{
-              ...styles.videoGrid,
-              gridTemplateColumns:
-                window.innerWidth < 600
-                  ? "1fr"
-                  : window.innerWidth < 900
-                  ? "1fr 1fr"
-                  : "repeat(4,1fr)",
-            }}
-          >
-            {videos.map((v) => {
-              const hasVoted = v.voters?.includes(userId);
+      {challenge.status === "ended" && (
+        <div style={{ textAlign: "center" }}>
+          <p>Challenge Ended ✅</p>
+          {videos.length > 0 &&
+            (() => {
+              const winner = videos.reduce((a, b) => (b.votes > a.votes ? b : a));
               return (
-                <div key={v.id} style={styles.videoCard}>
-                  <video
-                    src={v.url}
-                    controls
-                    playsInline
-                    style={styles.videoPlayer}
-                  ></video>
-                  <div style={styles.voteInfo}>
-                    <div style={styles.voteCount}>{v.votes} Votes</div>
-                    {challenge.status === "active" ? (
-                      <button
-                        style={
-                          hasVoted
-                            ? styles.votedButton
-                            : styles.voteButton
-                        }
-                        onClick={() => handleVote(v.id)}
-                      >
-                        {hasVoted ? "Your Vote" : "Vote"}
-                      </button>
-                    ) : (
-                      <div style={{ color: "#888" }}>
-                        Голосование недоступно
-                      </div>
-                    )}
-                  </div>
+                <div>
+                  <p style={{ color: "#0f0", fontWeight: "bold" }}>🏆 Winner: Video {winner.id} ({winner.votes} votes)</p>
+                  <video src={winner.url} controls playsInline style={{ width: "100%", maxWidth: "600px", marginTop: "1rem", border: "2px solid #0f0", borderRadius: "8px" }}></video>
                 </div>
               );
-            })}
-          </div>
-        </section>
-      </div>
-    </>
+            })()}
+        </div>
+      )}
+
+      <section style={{ width: "100%", maxWidth: "1200px" }}>
+        <h2 style={{ textAlign: "center", fontSize: "2rem", marginBottom: "1rem", color: "#0f0", textShadow: "0 0 5px rgba(0,255,65,0.4)" }}>
+          Community Recreations
+        </h2>
+        <div style={{ ...styles.videoGrid, gridTemplateColumns: window.innerWidth < 600 ? "1fr" : window.innerWidth < 900 ? "1fr 1fr" : "repeat(4,1fr)" }}>
+          {videos.map((v) => {
+            const hasVoted = v.voters?.includes(userId);
+            return (
+              <div key={v.id} style={styles.videoCard}>
+                <video src={v.url} controls playsInline style={styles.videoPlayer}></video>
+                <div style={styles.voteInfo}>
+                  <div style={styles.voteCount}>{v.votes} Votes</div>
+                  {challenge.status === "active" ? (
+                    <button style={hasVoted ? styles.votedButton : styles.voteButton} onClick={() => handleVote(v.id)}>
+                      {hasVoted ? "Your Vote" : "Vote"}
+                    </button>
+                  ) : (
+                    <div style={{ color: "#888" }}>Voting unavailable</div>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+    </div>
   );
 }
