@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { Award, Clapperboard, Lightbulb, Users, Video } from "lucide-react";
+import { Clapperboard, Lightbulb, Users, Video } from "lucide-react";
 import { Link } from "react-router-dom";
 
 // A reusable component for feature cards

@@ -10,9 +10,17 @@
 }
 
 /* Анимация для плавного появления элементов */
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 20px -5px hsl(var(--primary) / 0.6);
+  }
+  50% {
+    box-shadow: 0 0 35px 5px hsl(var(--primary) / 0.8);
+  }
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2.5s infinite ease-in-out;
 }
 .fade-in {
   animation: fadeIn 0.8s ease-out forwards;

@@ -1,10 +1,9 @@
-import React, { useEffect, useState } from "react";
+import  { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { db } from "./firebase";
 import {
   collection,
   doc,
-  getDoc,
   query,
   where,
   addDoc,
@@ -271,7 +270,7 @@ export default function ChallengePage() {
 
       {embedUrl && (
         <div style={{ position: "relative", width: "100%", maxWidth: "800px", paddingTop: "56.25%", borderRadius: "8px", overflow: "hidden", boxShadow: "0 0 15px rgba(0,255,65,0.3)" }}>
-          <iframe src={embedUrl} title="Challenge Original Video" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen" allowFullScreen playsInline style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", border: "none" }}></iframe>
+          <iframe src={embedUrl} title="Challenge Original Video" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen" allowFullScreen style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", border: "none" }}></iframe>
         </div>
       )}
 

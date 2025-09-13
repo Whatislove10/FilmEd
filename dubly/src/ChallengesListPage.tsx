@@ -7,36 +7,28 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Clock, Users, Video } from 'lucide-react';
+import { cn } from '@/lib/utils'; // <-- 1. Импортируем утилиту cn
 
-// --- KEY CHANGE 1: Import local images ---
-// Make sure the path and filenames match what you have in `src/assets`
-import titanicImage from '@/assets/Titanic.jpg';
-import matrixImage from '@/assets/Matrix.jpg';
-import scarfaceImage from '@/assets/Scarface.jpg';
+// Импорт локальных изображений
+import titanicImage from '@/assets/titanic.jpg';
+import matrixImage from '@/assets/matrix.jpg';
+import scarfaceImage from '@/assets/scarface.jpg';
 
-
-// Interface for the challenge data
 interface Challenge {
   id: string;
   title: string;
   description: string;
-  originalVideoUrl?: string;
   status: "upcoming" | "active" | "ended";
-  winner?: string;
   participants?: number;
   daysLeft?: number;
-  image: string; // The type remains a string, as the import provides a path
+  image: string;
 }
 
-// --- KEY CHANGE 2: Use the imported images in the array ---
-const challengeImages = [
-    titanicImage,
-    matrixImage,
-    scarfaceImage,
-];
+const challengeImages = [titanicImage, matrixImage, scarfaceImage];
 
 export default function ChallengesListPage() {
     const [challenges, setChallenges] = useState<Challenge[]>([]);
+    const [sortedChallenges, setSortedChallenges] = useState<Challenge[]>([]);
 
     useEffect(() => {
         const fetchChallenges = async () => {
@@ -47,7 +39,6 @@ export default function ChallengesListPage() {
                 arr.push({ 
                     ...(doc.data() as Omit<Challenge, 'id' | 'image'>), 
                     id: doc.id,
-                    // Assign the local image path cyclically
                     image: challengeImages[imageIndex % challengeImages.length] 
                 });
                 imageIndex++;
@@ -57,26 +48,54 @@ export default function ChallengesListPage() {
         fetchChallenges();
     }, []);
 
+    // 2. Сортируем челленджи, чтобы активный всегда был первым
+    useEffect(() => {
+        const sorted = [...challenges].sort((a, b) => {
+            if (a.status === 'active') return -1;
+            if (b.status === 'active') return 1;
+            return 0;
+        });
+        setSortedChallenges(sorted);
+    }, [challenges]);
+
     return (
         <div className="space-y-8 fade-in">
             <div className="text-center">
-                <h1 className="text-4xl font-bold tracking-tight">Weekly Challenges</h1>
-                <p className="text-muted-foreground mt-2 text-lg">A new theme every week. A new chance to shine.</p>
+                <h1 className="text-3xl md:text-4xl font-bold tracking-tight">Weekly Challenges</h1>
+                <p className="text-muted-foreground mt-2 text-md md:text-lg">A new theme every week. A new chance to shine.</p>
             </div>
 
-            {challenges.length === 0 ? (
+            {sortedChallenges.length === 0 ? (
                 <p className="text-center text-muted-foreground">Loading challenges...</p>
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    {challenges.map((c) => (
-                        <Card key={c.id} className="flex flex-col overflow-hidden transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-2xl hover:shadow-primary/20">
+                    {sortedChallenges.map((c) => (
+                        <Card 
+                          key={c.id} 
+                          // --- 3. ПРИМЕНЯЕМ УСЛОВНЫЕ СТИЛИ ---
+                          className={cn(
+                            "flex flex-col overflow-hidden transition-all duration-300 ease-in-out",
+                            c.status === 'active' 
+                              ? "border-2 border-primary animate-pulse-glow" // Стили для активного
+                              : "hover:scale-105 hover:shadow-2xl hover:shadow-primary/20" // Стили для остальных
+                          )}
+                        >
                             <div className="relative">
                                 <img src={c.image} alt={c.title} className="w-full h-48 object-cover" />
-                                <Badge variant={c.status === 'active' ? 'default' : 'secondary'} className="absolute top-4 right-4 capitalize">{c.status}</Badge>
+                                <Badge 
+                                  variant={c.status === 'active' ? 'default' : 'secondary'} 
+                                  // --- 4. ДЕЛАЕМ БЕЙДЖ ЯРЧЕ ---
+                                  className={cn(
+                                    "absolute top-4 right-4 capitalize",
+                                    c.status === 'active' && "text-lg px-4 py-1 bg-red-600 text-white animate-pulse"
+                                  )}
+                                >
+                                  {c.status === 'active' ? 'LIVE' : c.status}
+                                </Badge>
                             </div>
                             <CardHeader>
                                 <CardTitle>{c.title}</CardTitle>
-                                <CardDescription className="line-clamp-3">{c.description}</CardDescription>
+                                <CardDescription className="line-clamp-3 h-[4.5rem]">{c.description}</CardDescription>
                             </CardHeader>
                             <CardContent className="flex-grow space-y-4">
                                 <div className="flex justify-between items-center text-sm text-muted-foreground">
@@ -89,7 +108,7 @@ export default function ChallengesListPage() {
                                 </div>
                             </CardContent>
                             <CardFooter>
-                                <Button asChild className="w-full">
+                                <Button asChild className="w-full" size={c.status === 'active' ? 'lg' : 'default'}>
                                     <Link to={`/challenge/${c.id}`}>
                                         <Video className="mr-2 h-4 w-4" /> 
                                         {c.status === 'ended' ? 'View Results' : 'Join Challenge'}
