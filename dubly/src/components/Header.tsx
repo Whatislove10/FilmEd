@@ -26,7 +26,7 @@ import {
 // Создаем массив ссылок для удобного управления
 const navLinks = [
   { href: "/", label: "Home", icon: <Home className="h-4 w-4" /> },
-  { href: "/challenge/1", label: "Challenges", icon: <Medal className="h-4 w-4" /> },
+  { href: "/challenges", label: "Challenges", icon: <Medal className="h-4 w-4" /> },
   { href: "/learn", label: "Learn", icon: <GraduationCap className="h-4 w-4" /> },
   { href: "/profile", label: "Profile", icon: <User className="h-4 w-4" /> },
   { href: "/feed", label: "Feed", icon: <Film className="h-4 w-4" /> },
