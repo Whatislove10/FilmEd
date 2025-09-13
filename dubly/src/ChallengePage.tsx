@@ -13,13 +13,13 @@ import {
 } from "firebase/firestore";
 import MatrixBackground from "./MatrixBackground";
 
-
-
 interface Challenge {
   id: string;
   title: string;
   description: string;
   originalVideoUrl?: string;
+  status: "upcoming" | "active" | "ended";
+  winner?: string;
 }
 
 interface Video {
@@ -50,17 +50,82 @@ const styles: any = {
     marginBottom: "0.5rem",
     letterSpacing: "0.05em",
   },
-  description: { fontSize: "clamp(1rem,2.5vw,1.2rem)", color: "#00cc33", maxWidth: "700px", margin: "0 auto", lineHeight: 1.5 },
-  videoGrid: { display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "1.5rem", width: "100%", maxWidth: "1200px" },
-  videoCard: { backgroundColor: "#1a1a1a", borderRadius: "12px", overflow: "hidden", display: "flex", flexDirection: "column", transition: "all 0.3s ease", position: "relative", border: "1px solid #004400", boxShadow: "0 4px 12px rgba(0,0,0,0.5), 0 0 8px rgba(0,255,65,0.2)" },
-  videoPlayer: { width: "100%", borderRadius: "8px", marginBottom: "0.5rem" },
-  voteInfo: { padding: "10px", display: "flex", flexDirection: "column", gap: "8px" },
+  description: {
+    fontSize: "clamp(1rem,2.5vw,1.2rem)",
+    color: "#00cc33",
+    maxWidth: "700px",
+    margin: "0 auto",
+    lineHeight: 1.5,
+  },
+  videoGrid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(4, 1fr)",
+    gap: "1.5rem",
+    width: "100%",
+    maxWidth: "1200px",
+  },
+  videoCard: {
+    backgroundColor: "#1a1a1a",
+    borderRadius: "12px",
+    overflow: "hidden",
+    display: "flex",
+    flexDirection: "column",
+    transition: "all 0.3s ease",
+    position: "relative",
+    border: "1px solid #004400",
+    boxShadow:
+      "0 4px 12px rgba(0,0,0,0.5), 0 0 8px rgba(0,255,65,0.2)",
+  },
+  videoPlayer: {
+    width: "100%",
+    borderRadius: "8px",
+    marginBottom: "0.5rem",
+  },
+  voteInfo: {
+    padding: "10px",
+    display: "flex",
+    flexDirection: "column",
+    gap: "8px",
+  },
   voteCount: { fontSize: "1rem", fontWeight: "600", color: "#0f0" },
-  voteButton: { padding: "0.5rem", borderRadius: "6px", border: "1px solid #0f0", color: "#0f0", backgroundColor: "transparent", cursor: "pointer" },
-  votedButton: { padding: "0.5rem", borderRadius: "6px", border: "1px solid #008000", color: "#fff", backgroundColor: "#008000", cursor: "default" },
-  uploadSection: { display: "flex", gap: "1rem", alignItems: "center" },
-  fileInput: { padding: "0.5rem 1rem", borderRadius: "6px", border: "1px solid #0f0", backgroundColor: "#0a1a0d", color: "#0f0", cursor: "pointer" },
-  uploadButton: { padding: "0.5rem 1.2rem", borderRadius: "6px", border: "none", backgroundColor: "#0f0", color: "#111", fontWeight: "600", cursor: "pointer" },
+  voteButton: {
+    padding: "0.5rem",
+    borderRadius: "6px",
+    border: "1px solid #0f0",
+    color: "#0f0",
+    backgroundColor: "transparent",
+    cursor: "pointer",
+  },
+  votedButton: {
+    padding: "0.5rem",
+    borderRadius: "6px",
+    border: "1px solid #008000",
+    color: "#fff",
+    backgroundColor: "#008000",
+    cursor: "default",
+  },
+  uploadSection: {
+    display: "flex",
+    gap: "1rem",
+    alignItems: "center",
+  },
+  fileInput: {
+    padding: "0.5rem 1rem",
+    borderRadius: "6px",
+    border: "1px solid #0f0",
+    backgroundColor: "#0a1a0d",
+    color: "#0f0",
+    cursor: "pointer",
+  },
+  uploadButton: {
+    padding: "0.5rem 1.2rem",
+    borderRadius: "6px",
+    border: "none",
+    backgroundColor: "#0f0",
+    color: "#111",
+    fontWeight: "600",
+    cursor: "pointer",
+  },
 };
 
 export default function ChallengePage() {
@@ -75,64 +140,110 @@ export default function ChallengePage() {
 
   const [userId] = useState(() => {
     let uid = localStorage.getItem("uid");
-    if (!uid) { uid = crypto.randomUUID(); localStorage.setItem("uid", uid); }
+    if (!uid) {
+      uid = crypto.randomUUID();
+      localStorage.setItem("uid", uid);
+    }
     return uid;
   });
 
   useEffect(() => {
     if (!id) return;
     const docRef = doc(db, "challenges", id);
-    getDoc(docRef).then(docSnap => { if(docSnap.exists()) setChallenge({ ...(docSnap.data() as Challenge), id: docSnap.id }); });
+    getDoc(docRef).then((docSnap) => {
+      if (docSnap.exists())
+        setChallenge({
+          ...(docSnap.data() as Challenge),
+          id: docSnap.id,
+        });
+    });
 
     const q = query(collection(db, "videos"), where("challengeId", "==", id));
-    const unsubscribe = onSnapshot(q, snapshot => {
+    const unsubscribe = onSnapshot(q, (snapshot) => {
       const vids: Video[] = [];
-      snapshot.forEach(doc => vids.push({ ...(doc.data() as Video), id: doc.id, voters: (doc.data() as any).voters || [] }));
+      snapshot.forEach((doc) =>
+        vids.push({
+          ...(doc.data() as Video),
+          id: doc.id,
+          voters: (doc.data() as any).voters || [],
+        })
+      );
       setVideos(vids);
     });
     return () => unsubscribe();
   }, [id]);
 
   const handleVote = async (videoId: string) => {
-    const prevVote = videos.find(v => v.voters?.includes(userId));
-    const newVote = videos.find(v => v.id === videoId);
-    if(!newVote || prevVote?.id === videoId) return;
+    if (!challenge || challenge.status !== "active") return;
+    const prevVote = videos.find((v) => v.voters?.includes(userId));
+    const newVote = videos.find((v) => v.id === videoId);
+    if (!newVote || prevVote?.id === videoId) return;
 
     try {
-      if(prevVote) await updateDoc(doc(db,"videos",prevVote.id), { voters: prevVote.voters!.filter(v => v !== userId), votes: prevVote.votes-1 });
-      await updateDoc(doc(db,"videos",newVote.id), { voters: [...newVote.voters!, userId], votes: newVote.votes+1 });
-    } catch(err){ console.error(err); }
+      if (prevVote)
+        await updateDoc(doc(db, "videos", prevVote.id), {
+          voters: prevVote.voters!.filter((v) => v !== userId),
+          votes: prevVote.votes - 1,
+        });
+      await updateDoc(doc(db, "videos", newVote.id), {
+        voters: [...newVote.voters!, userId],
+        votes: newVote.votes + 1,
+      });
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   const handleUpload = async () => {
-    if(!file || !id || isUploading) return;
+    if (!file || !id || isUploading || !challenge || challenge.status !== "active")
+      return;
     setIsUploading(true);
     try {
       const formData = new FormData();
       formData.append("file", file);
       formData.append("upload_preset", UPLOAD_PRESET);
-      const res = await fetch(CLOUDINARY_URL, { method: "POST", body: formData });
+      const res = await fetch(CLOUDINARY_URL, {
+        method: "POST",
+        body: formData,
+      });
       const data = await res.json();
-      if(!data.secure_url) throw new Error("Upload failed");
-      await addDoc(collection(db,"videos"), { challengeId:id, url:data.secure_url, userId, votes:0, voters:[] });
+      if (!data.secure_url) throw new Error("Upload failed");
+      await addDoc(collection(db, "videos"), {
+        challengeId: id,
+        url: data.secure_url,
+        userId,
+        votes: 0,
+        voters: [],
+      });
       setFile(null);
-    } catch(err){ console.error(err); } 
-    finally { setIsUploading(false); }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   const getYouTubeEmbedUrl = (url?: string) => {
-    if(!url) return null;
-    let videoId: string|null = null;
+    if (!url) return null;
+    let videoId: string | null = null;
     try {
-      if(url.includes("youtu.be/")) videoId = url.split("youtu.be/")[1].split("?")[0];
-      else if(url.includes("watch?v=")) videoId = new URL(url).searchParams.get("v");
-      else if(url.includes("youtube.com/embed/")) videoId = url.split("/embed/")[1].split("?")[0];
-      if(videoId) return `https://www.youtube.com/embed/${videoId}?origin=${encodeURIComponent(window.location.origin)}&modestbranding=1&rel=0&playsinline=1`;
+      if (url.includes("youtu.be/"))
+        videoId = url.split("youtu.be/")[1].split("?")[0];
+      else if (url.includes("watch?v="))
+        videoId = new URL(url).searchParams.get("v");
+      else if (url.includes("youtube.com/embed/"))
+        videoId = url.split("/embed/")[1].split("?")[0];
+      if (videoId)
+        return `https://www.youtube.com/embed/${videoId}?origin=${encodeURIComponent(
+          window.location.origin
+        )}&modestbranding=1&rel=0&playsinline=1`;
       return null;
-    } catch { return null; }
+    } catch {
+      return null;
+    }
   };
 
-  if(!challenge) return <div style={styles.page}>Loading challenge...</div>;
+  if (!challenge) return <div style={styles.page}>Loading challenge...</div>;
   const embedUrl = getYouTubeEmbedUrl(challenge.originalVideoUrl);
 
   return (
@@ -145,29 +256,154 @@ export default function ChallengePage() {
         </header>
 
         {embedUrl && (
-          <div style={{ position:"relative", width:"100%", maxWidth:"800px", paddingTop:"56.25%", borderRadius:"8px", overflow:"hidden", boxShadow:"0 0 15px rgba(0,255,65,0.3)" }}>
-            <iframe src={embedUrl} title="Challenge Original Video" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen" allowFullScreen playsInline style={{ position:"absolute", top:0, left:0, width:"100%", height:"100%", border:"none" }}></iframe>
+          <div
+            style={{
+              position: "relative",
+              width: "100%",
+              maxWidth: "800px",
+              paddingTop: "56.25%",
+              borderRadius: "8px",
+              overflow: "hidden",
+              boxShadow: "0 0 15px rgba(0,255,65,0.3)",
+            }}
+          >
+            <iframe
+              src={embedUrl}
+              title="Challenge Original Video"
+              frameBorder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
+              allowFullScreen
+              playsInline
+              style={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                width: "100%",
+                height: "100%",
+                border: "none",
+              }}
+            ></iframe>
           </div>
         )}
 
-        <section style={styles.uploadSection}>
-          <label style={styles.fileInput}>{file ? `Selected: ${file.name}` : "Select video"}
-            <input type="file" accept="video/*" style={{ display:"none" }} onChange={e => setFile(e.target.files?.[0] || null)} />
-          </label>
-          <button style={styles.uploadButton} onClick={handleUpload} disabled={!file || isUploading}>{isUploading ? "Uploading..." : "Upload"}</button>
-        </section>
+        {/* --- Upcoming --- */}
+        {challenge.status === "upcoming" && (
+          <div style={{ textAlign: "center" }}>
+            <p>Этот челлендж ещё не начался.</p>
+            <button style={styles.uploadButton}>
+              🔔 Напомнить
+            </button>
+          </div>
+        )}
 
-        <section style={{ width:"100%", maxWidth:"1200px" }}>
-          <h2 style={{ textAlign:"center", fontSize:"2rem", marginBottom:"1rem", color:"#0f0", textShadow:"0 0 5px rgba(0,255,65,0.4)" }}>Community Recreations</h2>
-          <div style={{ ...styles.videoGrid, gridTemplateColumns: window.innerWidth<600 ? "1fr" : window.innerWidth<900 ? "1fr 1fr" : "repeat(4,1fr)" }}>
-            {videos.map(v => {
+        {/* --- Active --- */}
+        {challenge.status === "active" && (
+          <section style={styles.uploadSection}>
+            <label style={styles.fileInput}>
+              {file ? `Selected: ${file.name}` : "Select video"}
+              <input
+                type="file"
+                accept="video/*"
+                style={{ display: "none" }}
+                onChange={(e) =>
+                  setFile(e.target.files?.[0] || null)
+                }
+              />
+            </label>
+            <button
+              style={styles.uploadButton}
+              onClick={handleUpload}
+              disabled={!file || isUploading}
+            >
+              {isUploading ? "Uploading..." : "Upload"}
+            </button>
+          </section>
+        )}
+
+        {/* --- Ended --- */}
+{challenge.status === "ended" && (
+  <div style={{ textAlign: "center" }}>
+    <p>Челлендж завершён ✅</p>
+    {videos.length > 0 && (
+      (() => {
+        const winner = videos.reduce((a, b) =>
+          b.votes > a.votes ? b : a
+        );
+        return (
+          <div>
+            <p style={{ color: "#0f0", fontWeight: "bold" }}>
+              🏆 Победитель: видео {winner.id} ({winner.votes} голосов)
+            </p>
+            <video
+              src={winner.url}
+              controls
+              playsInline
+              style={{
+                width: "100%",
+                maxWidth: "600px",
+                marginTop: "1rem",
+                border: "2px solid #0f0",
+                borderRadius: "8px",
+              }}
+            ></video>
+          </div>
+        );
+      })()
+    )}
+  </div>
+)}
+
+        <section style={{ width: "100%", maxWidth: "1200px" }}>
+          <h2
+            style={{
+              textAlign: "center",
+              fontSize: "2rem",
+              marginBottom: "1rem",
+              color: "#0f0",
+              textShadow: "0 0 5px rgba(0,255,65,0.4)",
+            }}
+          >
+            Community Recreations
+          </h2>
+          <div
+            style={{
+              ...styles.videoGrid,
+              gridTemplateColumns:
+                window.innerWidth < 600
+                  ? "1fr"
+                  : window.innerWidth < 900
+                  ? "1fr 1fr"
+                  : "repeat(4,1fr)",
+            }}
+          >
+            {videos.map((v) => {
               const hasVoted = v.voters?.includes(userId);
               return (
                 <div key={v.id} style={styles.videoCard}>
-                  <video src={v.url} controls playsInline style={styles.videoPlayer}></video>
+                  <video
+                    src={v.url}
+                    controls
+                    playsInline
+                    style={styles.videoPlayer}
+                  ></video>
                   <div style={styles.voteInfo}>
                     <div style={styles.voteCount}>{v.votes} Votes</div>
-                    <button style={hasVoted ? styles.votedButton : styles.voteButton} onClick={() => handleVote(v.id)}>{hasVoted ? "Your Vote" : "Vote"}</button>
+                    {challenge.status === "active" ? (
+                      <button
+                        style={
+                          hasVoted
+                            ? styles.votedButton
+                            : styles.voteButton
+                        }
+                        onClick={() => handleVote(v.id)}
+                      >
+                        {hasVoted ? "Your Vote" : "Vote"}
+                      </button>
+                    ) : (
+                      <div style={{ color: "#888" }}>
+                        Голосование недоступно
+                      </div>
+                    )}
                   </div>
                 </div>
               );

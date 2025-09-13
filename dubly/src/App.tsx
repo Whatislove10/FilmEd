@@ -5,12 +5,19 @@ import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import ChallengePage from "./ChallengePage";
 import { db } from "./firebase";
 import { collection, getDocs } from "firebase/firestore";
+import LearnPage from "./LearnPage";
+import ProfilePage from "./ProfilePage";
+import FeedPage from "./FeedPage";
+import AboutPage from "./AboutPage";
+import TeamPage from "./TeamPage";
 
 interface Challenge {
   id: string;
   title: string;
   description: string;
   originalVideoUrl?: string;
+  status: "upcoming" | "active" | "ended";
+  winner?: string;
 }
 
 // Стили для App компонента
@@ -192,7 +199,12 @@ export default function App() {
   </div>
   <nav style={styles.nav}>
     <Link to="/" style={styles.navLink}><i className="fas fa-home icon"></i> Home</Link>
-    <span style={styles.navLink}><i className="fas fa-trophy icon"></i> Challenges</span>
+    <Link to="/challenge/:id" style={styles.navLink}><i className="fas fa-trophy icon"></i> Challenges</Link>
+    <Link to="/learn">📚 Learn</Link>
+        <Link to="/profile">👤 Profile</Link>
+        <Link to="/feed">🎥 Feed</Link>
+        <Link to="/about">ℹ️ About</Link>
+        <Link to="/team">Meet Our Team</Link>
   </nav>
   <div style={styles.userProfile}>
     <div style={styles.userAvatar}>U</div>
@@ -204,6 +216,11 @@ export default function App() {
           <Routes>
             <Route path="/" element={<ChallengesList />} />
             <Route path="/challenge/:id" element={<ChallengePage />} />
+            <Route path="/learn" element={<LearnPage />} />
+            <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/feed" element={<FeedPage />} />
+            <Route path="/about" element={<AboutPage />} />
+            <Route path="/team" element={<TeamPage />} />
           </Routes>
         </main>
       </div>
