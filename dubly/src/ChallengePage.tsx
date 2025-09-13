@@ -309,31 +309,59 @@ export default function ChallengePage() {
         </div>
       )}
 
-      <section style={{ width: "100%", maxWidth: "1200px" }}>
-        <h2 style={{ textAlign: "center", fontSize: "2rem", marginBottom: "1rem", color: "#0f0", textShadow: "0 0 5px rgba(0,255,65,0.4)" }}>
-          Community Recreations
-        </h2>
-        <div style={{ ...styles.videoGrid, gridTemplateColumns: window.innerWidth < 600 ? "1fr" : window.innerWidth < 900 ? "1fr 1fr" : "repeat(4,1fr)" }}>
-          {videos.map((v) => {
-            const hasVoted = v.voters?.includes(userId);
-            return (
-              <div key={v.id} style={styles.videoCard}>
-                <video src={v.url} controls playsInline style={styles.videoPlayer}></video>
-                <div style={styles.voteInfo}>
-                  <div style={styles.voteCount}>{v.votes} Votes</div>
-                  {challenge.status === "active" ? (
-                    <button style={hasVoted ? styles.votedButton : styles.voteButton} onClick={() => handleVote(v.id)}>
-                      {hasVoted ? "Your Vote" : "Vote"}
-                    </button>
-                  ) : (
-                    <div style={{ color: "#888" }}>Voting unavailable</div>
-                  )}
-                </div>
-              </div>
-            );
-          })}
+      <h2 style={{ textAlign: "center", fontSize: "2rem", marginBottom: "1rem", color: "#0f0", textShadow: "0 0 5px rgba(0,255,65,0.4)" }}>
+    Community Recreations
+  </h2>
+  <div
+    style={{
+      display: "grid",
+      gridTemplateColumns:
+        videos.length === 2
+          ? "1fr 1fr"
+          : window.innerWidth < 600
+          ? "1fr"
+          : "repeat(4,1fr)",
+      gap: "1.5rem",
+      justifyContent: "center",
+      width: "100%",
+    }}
+  >
+    {videos.map((v) => {
+      const hasVoted = v.voters?.includes(userId);
+
+      const handleVideoPlay = (videoEl: HTMLVideoElement | null) => {
+        if (!videoEl) return;
+        const allVideos = document.querySelectorAll<HTMLVideoElement>("video");
+        allVideos.forEach((vid) => {
+          if (vid !== videoEl) vid.pause();
+        });
+      };
+
+      return (
+        <div key={v.id} style={styles.videoCard}>
+          <video
+            src={v.url}
+            controls
+            style={styles.videoPlayer}
+            onPlay={(e) => handleVideoPlay(e.currentTarget)}
+          ></video>
+          <div style={styles.voteInfo}>
+            <div style={styles.voteCount}>{v.votes} Votes</div>
+            {challenge.status === "active" ? (
+              <button
+                style={hasVoted ? styles.votedButton : styles.voteButton}
+                onClick={() => handleVote(v.id)}
+              >
+                {hasVoted ? "Your Vote" : "Vote"}
+              </button>
+            ) : (
+              <div style={{ color: "#888" }}>Voting unavailable</div>
+            )}
+          </div>
         </div>
-      </section>
-    </div>
-  );
+      );
+    })}
+  </div>
+</div>
+);
 }
